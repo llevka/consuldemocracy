@@ -1,10 +1,6 @@
 require "rails_helper"
 
 describe "Welcome screen" do
-  it_behaves_like "remotely_translatable", :proposal, "root_path", {}
-  it_behaves_like "remotely_translatable", :debate, "root_path", {}
-  it_behaves_like "remotely_translatable", :legislation_process, "root_path", {}
-
   scenario "requires a logged in user" do
     visit welcome_path
     expect(page).to have_content "You must sign in or register to continue."

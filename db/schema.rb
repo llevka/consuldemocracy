@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_09_085528) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_29_120000) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_trgm"
-  enable_extension "plpgsql"
-  enable_extension "unaccent"
+  enable_extension "pg_catalog.plpgsql"
+  enable_extension "shared_extensions.pg_trgm"
+  enable_extension "shared_extensions.unaccent"
 
   create_table "active_poll_translations", id: :serial, force: :cascade do |t|
     t.integer "active_poll_id", null: false
@@ -526,7 +526,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_09_085528) do
     t.integer "cached_votes_down", default: 0
     t.integer "comments_count", default: 0
     t.datetime "confirmed_hide_at", precision: nil
-    t.integer "cached_anonymous_votes_total", default: 0
     t.integer "cached_votes_score", default: 0
     t.bigint "hot_score", default: 0
     t.integer "confidence_score", default: 0
@@ -1019,7 +1018,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_09_085528) do
     t.index ["author_id"], name: "index_poll_answers_on_author_id"
     t.index ["option_id", "author_id"], name: "index_poll_answers_on_option_id_and_author_id", unique: true
     t.index ["option_id"], name: "index_poll_answers_on_option_id"
-    t.index ["question_id", "answer"], name: "index_poll_answers_on_question_id_and_answer"
     t.index ["question_id"], name: "index_poll_answers_on_question_id"
   end
 
@@ -1086,7 +1084,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_09_085528) do
     t.text "officer_assignment_id_log", default: ""
     t.text "author_id_log", default: ""
     t.bigint "option_id"
-    t.index ["answer"], name: "index_poll_partial_results_on_answer"
     t.index ["author_id"], name: "index_poll_partial_results_on_author_id"
     t.index ["booth_assignment_id", "date", "option_id"], name: "idx_on_booth_assignment_id_date_option_id_2ffcf6ea3b", unique: true
     t.index ["booth_assignment_id", "date"], name: "index_poll_partial_results_on_booth_assignment_id_and_date"
@@ -1118,6 +1115,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_09_085528) do
     t.integer "given_order", default: 1
     t.boolean "most_voted", default: false
     t.boolean "open_text", default: false
+    t.boolean "allow_custom_text", default: false
     t.index ["question_id"], name: "index_poll_question_answers_on_question_id"
   end
 

@@ -106,4 +106,58 @@ describe "Admin proposals", :admin do
       expect(find_field("Mark as selected")).not_to be_checked
     end
   end
+
+  context "Selecting csv", :no_js do
+    scenario "Downloading CSV file" do
+      first_proposal = create(:proposal, title: "Make Pluto a planet again",
+                                         summary: "summary 1",
+                                         created_at: Time.zone.local(2026, 6, 1, 14, 56, 10))
+      second_proposal = create(:proposal, title: "Build a monument to honour CONSUL developers",
+                                          summary: "summary 2",
+                                          created_at: Time.zone.local(2026, 6, 1, 14, 58, 20))
+      third_proposal = create(:proposal, title: "Build another monument just because",
+                                         summary: "summary 3",
+                                         created_at: Time.zone.local(2026, 6, 1, 15, 00, 30))
+
+      visit admin_proposals_path
+
+      click_link "Download current selection"
+
+      header = page.response_headers["Content-Disposition"]
+      expect(header).to match(/^attachment/)
+      expect(header).to match(/filename="proposals.csv"/)
+
+      csv_contents = <<~CSV
+        ID,Proposal,Author,Summary,Created at,\
+        Comment ID,Comment Author,Comment Content,Comment Parent,Comment Created at
+        #{third_proposal.id},#{third_proposal.title},\
+        #{third_proposal.author.email},#{third_proposal.summary},2026-06-01 15:00:30,"","","","",""
+        #{second_proposal.id},#{second_proposal.title},\
+        #{second_proposal.author.email},#{second_proposal.summary},2026-06-01 14:58:20,"","","","",""
+        #{first_proposal.id},#{first_proposal.title},\
+        #{first_proposal.author.email},#{first_proposal.summary},2026-06-01 14:56:10,"","","","",""
+      CSV
+
+      expect(page.body).to eq(csv_contents)
+    end
+
+    scenario "Downloading CSV file with applied filter" do
+      create(:proposal, title: "Make Pluto a planet again", summary: "summary 1")
+      create(:proposal, title: "Build a monument to honour CONSUL developers", summary: "summary 2")
+
+      visit admin_proposals_path
+      fill_in "search", with: "Pluto"
+      click_button "Search"
+
+      expect(page).to have_content "Make Pluto a planet again"
+      expect(page).not_to have_content "Build a monument"
+
+      click_link "Download current selection"
+
+      expect(page.body).to have_content "ID,Proposal,Author,Summary,Created at,Comment ID," \
+                                        "Comment Author,Comment Content,Comment Parent,Comment Created at"
+      expect(page.body).to have_content "Make Pluto a planet again"
+      expect(page.body).not_to have_content "Build a monument"
+    end
+  end
 end

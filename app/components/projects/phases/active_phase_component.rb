@@ -1,6 +1,6 @@
 class Projects::Phases::ActivePhaseComponent < ApplicationComponent
   include Header
-  use_helpers :wysiwyg, :auto_link_already_sanitized_html
+  delegate :wysiwyg, :auto_link_already_sanitized_html, to: :helpers
   attr_reader :project_phase
 
   def initialize(project_phase)

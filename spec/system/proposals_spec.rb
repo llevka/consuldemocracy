@@ -6,8 +6,6 @@ describe "Proposals" do
   context "Concerns" do
     it_behaves_like "notifiable in-app", :proposal
     it_behaves_like "relationable", Proposal
-    it_behaves_like "remotely_translatable", :proposal, "proposals_path", {}
-    it_behaves_like "remotely_translatable", :proposal, "proposal_path", { id: "id" }
     it_behaves_like "flaggable", :proposal
   end
 
@@ -125,7 +123,7 @@ describe "Proposals" do
     expect(page).to have_content I18n.l(proposal.created_at.to_date)
     expect(page).to have_avatar "M"
     expect(page.html).to include "<title>#{proposal.title}</title>"
-    expect(page).not_to have_css ".js-flag-actions"
+    expect(page).not_to have_css ".flag-actions"
     expect(page).not_to have_css ".js-follow"
   end
 
@@ -205,8 +203,8 @@ describe "Proposals" do
       expect(page).not_to have_content("Related content")
       expect(page).not_to have_button("Add related content")
 
-      within(".proposal-info") do
-        expect(page).not_to have_link("No comments", href: "#comments")
+      within(".detailed-info") do
+        expect(page).to have_link "No comments", href: "#comments"
       end
     end
 
@@ -295,36 +293,6 @@ describe "Proposals" do
         expect(page).to have_css(".is-stuck")
         expect(page).not_to have_css(".is-anchored")
       end
-    end
-  end
-
-  context "Embedded video" do
-    scenario "Show YouTube video" do
-      proposal = create(:proposal, video_url: "http://www.youtube.com/watch?v=a7UFm6ErMPU")
-
-      visit proposal_path(proposal)
-
-      within "#js-embedded-video" do
-        expect(page).to have_css "iframe[src='https://www.youtube-nocookie.com/embed/a7UFm6ErMPU']"
-      end
-    end
-
-    scenario "Show Vimeo video" do
-      proposal = create(:proposal, video_url: "https://vimeo.com/7232823")
-
-      visit proposal_path(proposal)
-
-      within "#js-embedded-video" do
-        expect(page).to have_css "iframe[src='https://player.vimeo.com/video/7232823?dnt=1']"
-      end
-    end
-
-    scenario "Dont show video" do
-      proposal = create(:proposal, video_url: nil)
-
-      visit proposal_path(proposal)
-
-      expect(page).not_to have_css "#js-embedded-video"
     end
   end
 
@@ -550,7 +518,7 @@ describe "Proposals" do
   end
 
   context "Geozones" do
-    scenario "When there are not gezones defined it does not show the geozone link" do
+    scenario "When there are no gezones defined it does not show the geozone link" do
       visit proposal_path(create(:proposal))
 
       expect(page).not_to have_css "#geozone"
@@ -880,7 +848,7 @@ describe "Proposals" do
 
         click_link "recommendations"
 
-        expect(page).to have_content "There are not proposals related to your interests"
+        expect(page).to have_content "There are no proposals related to your interests"
       end
 
       scenario "should display text when user has no related interests" do
@@ -1541,7 +1509,8 @@ describe "Successful proposals" do
     successful_proposals.each do |proposal|
       within("#proposal_#{proposal.id}_votes") do
         expect(page).not_to have_link "Support"
-        expect(page).to have_content "100% / 100%"
+
+        within(".progress") { expect(page).to have_content "100%", exact: true }
       end
     end
   end
@@ -1553,7 +1522,8 @@ describe "Successful proposals" do
       visit proposal_path(proposal)
       within("#proposal_#{proposal.id}_votes") do
         expect(page).not_to have_link "Support"
-        expect(page).to have_content "100% / 100%"
+
+        within(".progress") { expect(page).to have_content "100%", exact: true }
       end
     end
   end

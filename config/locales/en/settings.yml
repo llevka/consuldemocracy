@@ -123,7 +123,7 @@ en:
       help_page: "Help page"
       help_page_description: 'Displays a Help menu that contains a page with an info section about each enabled feature. Also custom pages and menus can be created in the "Custom pages" and  "Custom content blocks" sections'
       remote_translations: "Remote translation"
-      remote_translations_description: "Displays a button that allows users to request a translation when there are not contents in their language."
+      remote_translations_description: "Displays a button that allows users to request a translation when there are no contents in their language."
       remote_deepl_translations: "DeepL-Translation"
       remote_deepl_translations_description: "Allow translation with DeepL"
       translation_interface: "Translation interface"
@@ -147,6 +147,10 @@ en:
       gdpr:
         require_consent_for_notifications: Explicit consent for notifications
         require_consent_for_notifications_description: Require explicit user consent in order to send them newsletters and similar information as required by the General Data Protection Regulation (GDPR).
+        require_consent_for_embedded_videos: Consent for embedded videos
+        require_consent_for_embedded_videos_description: Show a warning and require user confirmation before loading embedded videos from external providers.
+        warning_for_external_links: "Warning for external links"
+        warning_for_external_links_description: "Enable a pop-up that requires users to confirm before going to an external website."
     remote_census:
       general:
         endpoint: "Endpoint"
@@ -244,3 +248,13 @@ en:
       more_info_link_description: Link shown in the consent banner to the cookie policy page.
       version_name: Version name
       version_name_description: Change the version name to force all users to go through the cookie consent process again. This feature can be handy when introducing drastic cookie policy changes requiring a new user acknowledgement.
+    llm:
+      title: LLM Settings
+      provider: "LLM Provider"
+      provider_description: "Providers will be disabled until credentials are configured in the secrets.yml."
+      use_llm_for_translations: "Content Translation"
+      use_llm_for_translations_description: "Use LLM for content translations and take precedence over Microsoft translation services."
+      model: "Model"
+      model_description: "The LLM model to use."
+      use_ai_image_suggestions: "AI Image Suggestions"
+      use_ai_image_suggestions_description: "Allow users to use AI for suggesting images from Pexels, instead of uploading their own."

@@ -1,6 +1,6 @@
 class Dashboard::ActiveResourceComponent < ApplicationComponent
   attr_reader :resource, :proposal, :new_actions_since_last_login
-  use_helpers :is_new_action_since_last_login?
+  delegate :is_new_action_since_last_login?, to: :helpers
 
   def initialize(resource, proposal, new_actions_since_last_login)
     @resource = resource
@@ -32,6 +32,6 @@ class Dashboard::ActiveResourceComponent < ApplicationComponent
                supports: number_with_delimiter(resource.required_supports,
                                                delimiter: ".")) if resource.required_supports > 0
 
-    safe_join label, h(" #{t("dashboard.resource.and")})") + tag(:br)
+    safe_join label, h(" #{t("dashboard.resource.and")} ") + tag(:br)
   end
 end

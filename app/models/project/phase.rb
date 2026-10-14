@@ -9,7 +9,6 @@ class Project
     translates :content, touch: true
     translates :subtitle, touch: true
     include Globalizable
-    include Sanitizable
     include Imageable
     include Cardable
 

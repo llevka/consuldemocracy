@@ -7,12 +7,12 @@ class Signature < ApplicationRecord
   validates :postal_code, presence: true, if: -> { Setting.force_presence_postal_code? }
   validates :signature_sheet, presence: true
 
+  normalizes :document_number, with: ->(document_number) { document_number.gsub(/[^a-z0-9]+/i, "").upcase }
+
   scope :verified,   -> { where(verified: true) }
   scope :unverified, -> { where(verified: false) }
 
   delegate :signable, to: :signature_sheet
-
-  before_validation :clean_document_number
 
   def verify
     if user_exists?
@@ -27,14 +27,17 @@ class Signature < ApplicationRecord
 
   def assign_vote_to_user
     set_user
-    if signable.is_a? Budget::Investment
-      if [nil, :no_selecting_allowed].include?(signable.reason_for_not_being_selectable_by(user))
-        signable.vote_by(voter: user, vote: "yes")
+    user.with_lock do
+      if signable.is_a? Budget::Investment
+        if [nil, :no_selecting_allowed].include?(signable.reason_for_not_being_selectable_by(user))
+          signable.vote_by(voter: user, vote: "yes")
+          assign_signature_to_vote
+        end
+      else
+        signable.register_vote(user, "yes")
+        assign_signature_to_vote
       end
-    else
-      signable.register_vote(user, "yes")
     end
-    assign_signature_to_vote
   end
 
   def assign_signature_to_vote
@@ -47,29 +50,9 @@ class Signature < ApplicationRecord
   end
 
   def create_user
-    user_params = {
-      document_number: document_number,
-      created_from_signature: true,
-      verified_at: Time.current,
-      erased_at: Time.current,
-      password: random_password,
-      terms_of_service: "1",
-      email: nil,
-      date_of_birth: @census_api_response.date_of_birth,
-      gender: @census_api_response.gender,
-      geozone: Geozone.find_by(census_code: @census_api_response.district_code)
-    }
-    User.create!(user_params)
-  end
+    user_params = { document_number: document_number, created_from_signature: true }
 
-  def clean_document_number
-    return if document_number.blank?
-
-    self.document_number = document_number.gsub(/[^a-z0-9]+/i, "").upcase
-  end
-
-  def random_password
-    (0...20).map { ("a".."z").to_a[rand(26)] }.join
+    User.create_from_census_response!(@census_api_response, user_params)
   end
 
   def in_census?

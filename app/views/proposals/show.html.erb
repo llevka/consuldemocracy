@@ -17,6 +17,7 @@
           @proposal,
           @proposal.author,
           Flag.flagged?(current_user, @proposal),
+          feature?("gdpr.require_consent_for_embedded_videos"),
           @proposal.followed_by?(current_user),
           current_user&.voted_for?(@proposal)] do %>
   <div class="proposal-show">
@@ -46,8 +47,8 @@
           <%= render "relationable/related_content", relationable: @proposal %>
         <% end %>
 
-        <div class="js-moderator-proposal-actions margin">
-          <%= render "proposals/actions", proposal: @proposal %>
+        <div class="margin">
+          <%= render Shared::ModerationActionsComponent.new(@proposal) %>
         </div>
       </div>
 

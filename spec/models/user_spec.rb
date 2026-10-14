@@ -33,28 +33,6 @@ describe User do
     end
   end
 
-  describe "#comment_flags" do
-    let(:user) { create(:user) }
-
-    it "returns {} if no comment" do
-      expect(user.comment_flags([])).to eq({})
-    end
-
-    it "returns a hash of flaggable_ids with 'true' if they were flagged by the user" do
-      comment1 = create(:comment)
-      comment2 = create(:comment)
-      comment3 = create(:comment)
-      Flag.flag(user, comment1)
-      Flag.flag(user, comment3)
-
-      flagged = user.comment_flags([comment1, comment2, comment3])
-
-      expect(flagged[comment1.id]).to be
-      expect(flagged[comment2.id]).not_to be
-      expect(flagged[comment3.id]).to be
-    end
-  end
-
   subject { build(:user) }
 
   it "is valid" do
@@ -682,13 +660,11 @@ describe User do
   describe "document_number" do
     it "upcases document number" do
       user = User.new(document_number: "x1234567z")
-      user.valid?
       expect(user.document_number).to eq("X1234567Z")
     end
 
     it "removes all characters except numbers and letters" do
       user = User.new(document_number: " 12.345.678 - B")
-      user.valid?
       expect(user.document_number).to eq("12345678B")
     end
   end
@@ -831,7 +807,7 @@ describe User do
       expect(Poll::Voter.where(user: user)).to match_array [v1, v2]
     end
 
-    it "does not reassign votes if the user has already voted" do
+    it "does not reassign poll voters if the user has already voted" do
       poll = create(:poll)
       user = create(:user, :level_three)
       other_user = create(:user, :level_three)
@@ -847,6 +823,42 @@ describe User do
 
       expect(Poll::Voter.where(user: user)).to match_array [voter, other_poll_voter]
       expect(Poll::Voter.where(user: other_user)).to eq []
+    end
+
+    it "does not reassign votes if the user has already voted" do
+      proposal = create(:proposal)
+      debate = create(:debate)
+      user = create(:user, :level_three)
+      other_user = create(:user, :level_three)
+
+      vote = create(:vote, voter: user, votable: proposal)
+      other_vote = create(:vote, voter: other_user, votable: proposal)
+      other_debate_vote = create(:vote, voter: other_user, votable: debate)
+
+      expect(Vote.where(voter: user)).to eq [vote]
+      expect(Vote.where(voter: other_user)).to match_array [other_vote, other_debate_vote]
+
+      user.take_votes_from(other_user)
+
+      expect(Vote.where(voter: user)).to match_array [vote, other_debate_vote]
+      expect(Vote.where(voter: other_user)).to eq []
+      expect(Vote.find_by(id: other_vote.id)).to be nil
+    end
+
+    it "updates cached vote counters when deleting duplicate votes" do
+      proposal = create(:proposal, cached_votes_up: 0)
+      user = create(:user, :level_three)
+      other_user = create(:user, :level_three)
+
+      create(:vote, voter: user, votable: proposal)
+      create(:vote, voter: other_user, votable: proposal)
+
+      expect(proposal.reload.cached_votes_up).to eq 2
+
+      user.take_votes_from(other_user)
+
+      expect(proposal.reload.cached_votes_up).to eq 1
+      expect(Vote.where(voter: user, votable: proposal).count).to eq 1
     end
   end
 
@@ -1102,6 +1114,32 @@ describe User do
         allow(Tenant).to receive(:current_schema).and_return("tolerant")
 
         expect(User.password_complexity).to eq({ digit: 0, lower: 0, symbol: 0, upper: 0 })
+      end
+    end
+  end
+
+  describe ".random_password" do
+    it "generates passwords at least 2 characters longer than the minimum required size" do
+      10.times do
+        expect(User.random_password.length).to be >= User.password_length.min + 2
+      end
+    end
+
+    it "follows the password complexity requirements" do
+      stub_secrets(security: { password_complexity: true })
+
+      10.times do
+        password = User.random_password
+
+        expect(password).to match(/\p{Lower}/)
+        expect(password).to match(/\p{Upper}/)
+        expect(password).to match(/\p{Digit}/)
+      end
+    end
+
+    it "generates different passwords each time" do
+      10.times do
+        expect(User.random_password).not_to eq User.random_password
       end
     end
   end

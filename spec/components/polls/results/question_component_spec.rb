@@ -3,17 +3,22 @@ require "rails_helper"
 describe Polls::Results::QuestionComponent do
   context "question that accepts options" do
     let(:question) { create(:poll_question, :yes_no) }
-    let(:option_yes) { question.question_options.find_by(title: "Yes") }
-    let(:option_no) { question.question_options.find_by(title: "No") }
+    let(:option_yes) { question.option_for("Yes") }
+    let(:option_no) { question.option_for("No") }
+    let(:option_other) do
+      create(:poll_question_option, question: question, title: "Other", allow_custom_text: true)
+    end
 
     it "renders results table content" do
-      create(:poll_answer, question: question, option: option_yes)
-      create(:poll_answer, question: question, option: option_no)
+      create_list(:poll_answer, 2, question: question, option: option_yes)
+      create_list(:poll_answer, 2, question: question, option: option_no)
+      create(:poll_answer, question: question, option: option_other)
 
       render_inline Polls::Results::QuestionComponent.new(question)
 
-      expect(page).to have_table with_rows: [{ "Most voted answer: Yes" => "1 (50.0%)",
-                                               "No" => "1 (50.0%)" }]
+      expect(page).to have_table with_rows: [{ "Most voted answer: Yes" => "2 (40%)",
+                                               "No" => "2 (40%)",
+                                               "Other" => "1 (20%)" }]
 
       page.find("table") do |table|
         expect(table).to have_css "th.win", count: 1
@@ -28,8 +33,8 @@ describe Polls::Results::QuestionComponent do
     it "renders open_ended headers and empty counts when there are no participants" do
       render_inline Polls::Results::QuestionComponent.new(open_ended_question)
 
-      expect(page).to have_table with_rows: [{ "Valid" => "0 (0.0%)",
-                                               "Blank" => "0 (0.0%)" }]
+      expect(page).to have_table with_rows: [{ "Valid" => "0 (0%)",
+                                               "Blank" => "0 (0%)" }]
     end
 
     it "renders counts and percentages provided by the model metrics" do
@@ -40,8 +45,8 @@ describe Polls::Results::QuestionComponent do
 
       render_inline Polls::Results::QuestionComponent.new(open_ended_question)
 
-      expect(page).to have_table with_rows: [{ "Valid" => "3 (75.0%)",
-                                               "Blank" => "1 (25.0%)" }]
+      expect(page).to have_table with_rows: [{ "Valid" => "3 (75%)",
+                                               "Blank" => "1 (25%)" }]
     end
   end
 end

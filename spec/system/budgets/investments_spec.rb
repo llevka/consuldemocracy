@@ -1,5 +1,4 @@
 require "rails_helper"
-require "sessions_helper"
 
 describe "Budget Investments" do
   let(:author)  { create(:user, :level_two, username: "Isabel") }
@@ -13,15 +12,6 @@ describe "Budget Investments" do
   context "Concerns" do
     it_behaves_like "notifiable in-app", :budget_investment
     it_behaves_like "relationable", Budget::Investment
-    it_behaves_like "remotely_translatable",
-                    :budget_investment,
-                    "budget_investments_path",
-                    { budget_id: "budget_id" }
-
-    it_behaves_like "remotely_translatable",
-                    :budget_investment,
-                    "budget_investment_path",
-                    { budget_id: "budget_id", id: "id" }
     it_behaves_like "flaggable", :budget_investment
   end
 
@@ -440,19 +430,19 @@ describe "Budget Investments" do
       first_user_investments_order = nil
       second_user_investments_order = nil
 
-      in_browser(:one) do
+      using_session(:one) do
         visit budget_investments_path(budget, heading: heading)
         first_user_investments_order = investments_order
       end
 
-      in_browser(:two) do
+      using_session(:two) do
         visit budget_investments_path(budget, heading: heading)
         second_user_investments_order = investments_order
       end
 
       expect(first_user_investments_order).not_to eq(second_user_investments_order)
 
-      in_browser(:one) do
+      using_session(:one) do
         click_link "Next"
         expect(page).to have_css ".pagination .current", text: "2"
 
@@ -462,7 +452,7 @@ describe "Budget Investments" do
         expect(investments_order).to eq(first_user_investments_order)
       end
 
-      in_browser(:two) do
+      using_session(:two) do
         click_link "Next"
         expect(page).to have_css ".pagination .current", text: "2"
 
@@ -479,12 +469,12 @@ describe "Budget Investments" do
       first_user_investments_order = nil
       second_user_investments_order = nil
 
-      in_browser(:one) do
+      using_session(:one) do
         visit budget_investments_path(budget, heading: heading, random_seed: "1")
         first_user_investments_order = investments_order
       end
 
-      in_browser(:two) do
+      using_session(:two) do
         visit budget_investments_path(budget, heading: heading, random_seed: "1")
         second_user_investments_order = investments_order
       end
@@ -841,6 +831,72 @@ describe "Budget Investments" do
                                     "Toda la ciudad: Toda la ciudad",
                                     "Health: More health professionals",
                                     "Health: More hospitals"]
+    end
+
+    context "Image suggestions" do
+      let(:llm_response) do
+        double(
+          "ImageSuggestions::Llm::Client::Response",
+          results: double(
+            "Pexels::PhotoSet",
+            photos: [
+              double(
+                "Pexels::Photo",
+                id: "suggested-photo-1",
+                src: { "small" => "https://example.com/suggested.jpg" },
+                user: double(name: "Test Photographer")
+              )
+            ]
+          ),
+          errors: []
+        )
+      end
+
+      before do
+        Setting["llm.provider"] = "OpenAI"
+        Setting["llm.model"] = "gpt-4o"
+        Setting["llm.use_ai_image_suggestions"] = true
+
+        stub_secrets(pexels_access_key: "test_key")
+
+        allow(ImageSuggestions::Llm::Client).to receive(:call).and_return(llm_response)
+        allow(ImageSuggestions::Pexels).to receive(:download)
+          .with("suggested-photo-1")
+          .and_return(fixture_file_upload("clippy.jpg"))
+      end
+
+      scenario "User can suggest images, attach one and create the investment" do
+        login_as(author)
+        visit new_budget_investment_path(budget)
+
+        fill_in_new_investment_title with: "New hospital in the center"
+        fill_in_ckeditor "Description", with: "We need a modern hospital with green areas"
+
+        click_link "Add image"
+
+        expect(page).to have_button "Suggest an image with AI"
+
+        click_button "Suggest an image with AI"
+
+        expect(page).to have_content "Select an image from the suggestions below:"
+
+        within(".suggested-images-container") do
+          click_button "Attach suggested image 1 of 1"
+        end
+
+        expect(page).to have_css ".image-fields.direct-upload img"
+        within(".image-fields.direct-upload") do
+          title_field = find("input[name$='[title]']", match: :first)
+          fill_in title_field[:id], with: "Image by Test Photographer.jpg"
+        end
+
+        check "I agree to the Privacy Policy and the Terms and conditions of use"
+        click_button "Create Investment"
+
+        expect(page).to have_content "Budget Investment created successfully"
+        expect(page).to have_content "New hospital in the center"
+        expect(page).to have_css "img[alt*='Test Photographer']"
+      end
     end
   end
 

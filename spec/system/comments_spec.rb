@@ -341,11 +341,13 @@ describe "Comments" do
 
       expect(page).not_to have_content "This was a mistake"
       expect(page).not_to have_button "Delete comment"
+      expect(page).not_to have_content "This comment has been deleted"
 
       refresh
 
       expect(page).not_to have_content "This was a mistake"
       expect(page).not_to have_button "Delete comment"
+      expect(page).not_to have_content "This comment has been deleted"
 
       logout
       login_as(admin)
@@ -458,7 +460,10 @@ describe "Comments" do
 
     within "#js-comment-form-comment_#{comment.id}" do
       click_button "Publish reply"
-      expect(page).to have_content "Can't be blank"
+
+      error_message_id = "comment_#{comment.id}_error"
+      expect(page).to have_css "[aria-invalid][aria-errormessage='#{error_message_id}']"
+      expect(page).to have_css "##{error_message_id}", exact_text: "Can't be blank"
     end
   end
 
@@ -706,5 +711,16 @@ describe "Comments" do
     click_button button_text
 
     expect(page).to have_content "Can't be blank"
+
+    error_message_id = "#{ActionView::RecordIdentifier.dom_id(resource)}_error"
+    expect(page).to have_css "[aria-invalid][aria-errormessage='#{error_message_id}']"
+    expect(page).to have_css "##{error_message_id}", exact_text: "Can't be blank"
+
+    fill_in fill_text, with: "This comment isn't blank"
+    click_button button_text
+
+    expect(page).not_to have_content "Can't be blank"
+    expect(page).not_to have_css "[aria-invalid]"
+    expect(page).not_to have_css "[aria-errormessage]"
   end
 end

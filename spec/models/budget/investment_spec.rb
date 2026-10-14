@@ -5,7 +5,7 @@ describe Budget::Investment do
 
   describe "Concerns" do
     it_behaves_like "notifiable"
-    it_behaves_like "sanitizable"
+    it_behaves_like "taggable"
     it_behaves_like "globalizable", :budget_investment
     it_behaves_like "acts as imageable", :budget_investment_image
     it_behaves_like "acts as paranoid", :budget_investment
@@ -1100,6 +1100,21 @@ describe Budget::Investment do
           expect(latina_investment.can_vote_in_another_heading?(user)).to be false
         end
       end
+    end
+  end
+
+  describe "#register_selection" do
+    let(:budget) { create(:budget, :selecting) }
+    let(:investment) { create(:budget_investment, budget: budget) }
+
+    it "does not create two votes when calling the method twice at the same time", :race_condition do
+      user = create(:user, :level_two)
+
+      2.times.map do
+        Thread.new { investment.register_selection(user) }
+      end.each(&:join)
+
+      expect(Vote.where(voter: user, votable: investment).count).to eq 1
     end
   end
 

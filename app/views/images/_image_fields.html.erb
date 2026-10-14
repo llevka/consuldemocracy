@@ -1,1 +1,3 @@
-<%= render Images::FieldsComponent.new(f, imageable: imageable) %>
+<%= render Images::FieldsComponent.new(f, imageable: imageable) do %>
+  <%= content %>
+<% end %>

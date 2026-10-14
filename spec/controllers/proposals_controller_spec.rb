@@ -7,11 +7,18 @@ describe ProposalsController do
 
       expect { get :index }.to raise_exception(FeatureFlags::FeatureDisabled)
     end
+
+    it "does not fail with invalid advanced search date filters" do
+      get :index, params: { advanced_search: { date_min: "13/13/2199", date_max: "nope" }}
+
+      expect(response).to have_http_status(:ok)
+    end
   end
 
   describe "PATCH update" do
-    before { InvisibleCaptcha.timestamp_enabled = false }
-    after { InvisibleCaptcha.timestamp_enabled = true }
+    around do |example|
+      InvisibleCaptcha.with(timestamp_enabled: false) { example.run }
+    end
 
     it "does not delete other proposal's map location" do
       proposal = create(:proposal)
@@ -33,8 +40,9 @@ describe ProposalsController do
   end
 
   describe "POST create" do
-    before { InvisibleCaptcha.timestamp_enabled = false }
-    after { InvisibleCaptcha.timestamp_enabled = true }
+    around do |example|
+      InvisibleCaptcha.with(timestamp_enabled: false) { example.run }
+    end
 
     it "assigns the responsible name to the proposal" do
       sign_in(create(:user, document_number: "13572468A"))
