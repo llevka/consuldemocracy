@@ -60,7 +60,7 @@ de:
       share: "Teilen Sie Ihr Projekt"
     budget_investment_unfeasible:
       title: "Ihr Investitionsprojekt wurde als nicht durchführbar eingestuft."
-      hi: "Liebe*r Benutzer*in,"
+      hi: "Werter Benutzer,"
       new: "Hierfür laden wir Sie ein, eine <strong>neue Investition</strong> auszuarbeiten, die an die Konditionen dieses Prozesses angepasst sind. Sie können dies über folgenden Link tun: %{url}."
       new_href: "neuer Ausgabenvorschlag"
       sincerely: "Mit freundlichen Grüßen"
@@ -69,7 +69,7 @@ de:
     budget_investment_selected:
       subject: "Ihr Investitionsprojekt %{code} wurde ausgewählt"
       title: "Ihr Investitionsprojekt wurde ausgewählt."
-      hi: "Liebe*r Benutzer*in,"
+      hi: "Werter Benutzer,"
       share: "Fangen Sie an Stimmen zu bekommen, indem sie Ihr Investitionsprojekt auf sozialen Netzwerken teilen. Teilen ist wichtig, um Ihr Projekt zu verwirklichen."
       share_button: "Teilen Sie Ihr Investitionsprojekt"
       thanks: "Vielen Dank für Ihre Teilnahme."
@@ -77,7 +77,7 @@ de:
     budget_investment_unselected:
       subject: "Ihr Investitionsprojekt %{code} wurde nicht ausgewählt"
       title: "Ihr Investitionsprojekt wurde nicht ausgewählt."
-      hi: "Liebe*r Benutzer*in,"
+      hi: "Werter Benutzer,"
       thanks: "Vielen Dank für Ihre Teilnahme."
       sincerely: "Mit freundlichen Grüßen"
     evaluation_comment:

@@ -13,8 +13,10 @@ class Admin::StatsController < Admin::BaseController
 
     @user_level_two   = User.active.level_two_verified.count
     @user_level_three = User.active.level_three_verified.count
-    @verified_users   = User.active.level_two_or_three_verified.count
-    @unverified_users = User.active.unverified.count
+#    @verified_users   = User.active.level_two_or_three_verified.count
+#    @unverified_users = User.active.unverified.count
+    @verified_users = User.active.where.not(confirmed_at: nil).count
+    @unverified_users = User.active.where(confirmed_at: nil).count
     @users = User.active.count
 
     @user_ids_who_voted_proposals = ActsAsVotable::Vote.where(votable_type: "Proposal")
