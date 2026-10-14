@@ -4,7 +4,7 @@ de:
       title: Abstimmung
     dashboard:
       index:
-        title: Vorsitzende/r der Abstimmung
+        title: Vorsitzender der Abstimmung
         info: Hier können Sie Benutzerdokumente überprüfen und Abstimmungsergebnisse speichern
         no_shifts: Sie haben heute keinen Amtswechsel.
     menu:

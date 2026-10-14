@@ -94,6 +94,7 @@
             <span class="number"><%= number_with_delimiter(@users) %></span>
           </p>
 
+<% if false %>
           <p>
             <%= t "admin.stats.show.summary.user_level_two" %> <br>
             <span class="number"><%= number_with_delimiter(@user_level_two) %></span>
@@ -110,11 +111,18 @@
               <%= number_with_delimiter(@user_ids_who_didnt_vote_proposals) %>
             </span>
           </p>
+<% end %>
+
         </div>
 
       </div>
 
-      <%= render Admin::Stats::GlobalChartComponent.new %>
+      <%#= render Admin::Stats::GlobalChartComponent.new %>
+      
+      <%= render Admin::Stats::GlobalChartComponent.new(
+            from: params[:from],
+            to: params[:to]
+          ) %>
     </div>
   </div>
 </div>

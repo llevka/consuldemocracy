@@ -1,4 +1,10 @@
 class Admin::Stats::GlobalChartComponent < ApplicationComponent
+
+  def initialize(from: nil, to: nil)
+    @from = from
+    @to = to
+  end
+
   private
 
     def event_names
@@ -10,7 +16,10 @@ class Admin::Stats::GlobalChartComponent < ApplicationComponent
     end
 
     def data_points
-      Ahoy::Chart.active_events_data_points
+      Ahoy::Chart.active_events_data_points(
+        from: (@from.presence || "2025-01-01"),
+        to: (@to.presence || Date.current.to_s)
+      )
     end
 
     def title

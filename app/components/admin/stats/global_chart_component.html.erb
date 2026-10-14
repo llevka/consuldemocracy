@@ -1,5 +1,24 @@
 <div class="stats-global-chart">
   <h2><%= title %></h2>
+
+  <%= form_with url: admin_stats_path, method: :get, local: true do %>
+    <div class="row">
+      <div class="small-12 medium-3 columns">
+        <%= label_tag :from, "Von" %>
+        <%= date_field_tag :from, (@from.presence || "2025-01-01") %>
+      </div>
+
+      <div class="small-12 medium-3 columns">
+        <%= label_tag :to, "Bis" %>
+        <%= date_field_tag :to, (@to.presence || Date.current.to_s) %>
+      </div>
+
+      <div class="small-12 medium-3 columns">
+        <%= submit_tag "Anzeigen", class: "button" %>
+      </div>
+    </div>
+  <% end %>
+
   <%= chart_tag %>
   <%= render Admin::Stats::EventLinksComponent.new(event_names) %>
 </div>
