@@ -1,4 +1,22 @@
 #projects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+
+  .project {
+    width: 100%;
+  }
+
+  .project-card {
+    width: 100%;
+    float: none;
+  }
+
+  @media screen and (min-width: 40em) {
+    .project {
+      width: 33.333333%;
+    }
+  }
 
   .card {
     border: 0;
@@ -36,4 +54,31 @@
       font-size: 1rem;
     }
   }
+}
+
+.active-phase .float-right {
+  float: right;
+  margin: 0 0 20px 30px;
+  max-width: 50%;
+}
+
+.active-phase .float-right img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.active-phase p,
+.active-phase li {
+  text-align: justify;
+}
+
+.active-phase strong,
+.active-phase b {
+  font-weight: 700 !important;
+}
+
+.active-phase em,
+.active-phase i {
+  font-style: italic;
 }

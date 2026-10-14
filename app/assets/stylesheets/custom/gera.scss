@@ -4,17 +4,33 @@
 }
 
 
+
 .top-links {
+
+    > a:first-child {
+        display: flex;
+        align-items: center;
+    }
+
+    > a:first-child img {
+        width: 260px;
+        height: 80px;
+        object-fit: contain;
+    }
+
     > :first-child {
         flex-grow: 1;
     }
+
     .custom-title {
         display:none;
     }
+
     @include breakpoint(large) {
         > :first-child {
             flex-grow: 0;
         }
+
         .custom-title {
             margin-left: 10px;
             display:flex;
@@ -24,8 +40,6 @@
         }
     }
 }
-
-
 
 .scroll-top {
   --scrolltop-zindex: 1020;
